@@ -72,3 +72,59 @@ uvicorn app.main:app --reload --port 8000
 ## API Documentation
 
 Interactive Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## API Endpoints
+
+### Users
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | /api/users/ | List all users |
+| GET | /api/users/{id} | Get user by ID |
+| POST | /api/users/ | Create user |
+
+### Purchase Orders
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | /api/po/ | List all POs |
+| GET | /api/po/{id} | Get PO details + audit log |
+| POST | /api/po/ | Create new PO (status: Draft) |
+| PATCH | /api/po/{id} | Edit PO (only when Needs Rework) |
+| POST | /api/po/{id}/submit | Submit PO for approval |
+| POST | /api/po/{id}/approve | Approve PO (role-based) |
+| POST | /api/po/{id}/reject | Reject PO with reason |
+| POST | /api/po/{id}/resubmit | Resubmit after rework |
+
+## Business Rules
+
+- POs with amount **< $100** bypass Manager Approval automatically
+- POs with category **IT Equipment** require IT Validation
+- Any approver can reject a PO → status becomes **Needs Rework**
+- Creator can edit and resubmit → restarts approval from beginning
+- Every action is recorded in the **audit log**
+
+## Project Structure
+
+rinf/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── database.py
+│   │   ├── models.py
+│   │   ├── schemas.py
+│   │   ├── crud.py
+│   │   └── routes/
+│   │       ├── users.py
+│   │       └── po.py
+│   ├── requirements.txt
+│   └── .env
+├── frontend/
+├── docker-compose.yml
+└── README.md
+
+## What I Would Improve With More Time
+
+- [ ] JWT authentication instead of role simulation
+- [ ] Email notifications when a PO needs attention
+- [ ] Pagination on the PO list endpoint
+- [ ] Unit tests for the state machine logic
+- [ ] Alembic migrations for DB schema versioning
