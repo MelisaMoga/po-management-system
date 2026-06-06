@@ -68,3 +68,13 @@ def add_audit_log(db: Session, po_id: int, action: str, performed_by: int, note:
     db.add(log)
     db.commit()
     return log
+
+
+def calculate_next_status(po: models.PurchaseOrder) -> models.POStatus:
+    if po.amount < 100:
+        if po.category == models.POCategory.IT_EQUIPMENT:
+            return models.POStatus.PENDING_IT_VALIDATION
+        else:
+            return models.POStatus.PENDING_FINANCE_APPROVAL
+    else:
+        return models.POStatus.PENDING_MANAGER_APPROVAL
