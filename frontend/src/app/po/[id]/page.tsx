@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
-import { getPO, submitPO, approvePO, rejectPO, resubmitPO } from "@/lib/api";
-import { PO, POStatus } from "@/lib/types";
+import { getPO, submitPO, approvePO, rejectPO, resubmitPO, updatePO } from "@/lib/api";
+import { PO, POCategory, POStatus } from "@/lib/types";
+
+const categories: POCategory[] = ["Services", "Office Supplies", "IT Equipment"];
 
 const statusStyles: Record<POStatus, string> = {
   Draft: "bg-zinc-100 text-zinc-600",
@@ -25,6 +27,11 @@ export default function PODetailPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editAmount, setEditAmount] = useState("");
+  const [editCategory, setEditCategory] = useState<POCategory>("Services");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -127,13 +134,29 @@ export default function PODetailPage() {
             )}
 
             {canResubmit && (
-              <button
-                disabled={busy}
-                onClick={() => handleAction(() => resubmitPO(po.id, currentUser.id))}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors disabled:opacity-50"
-              >
-                Resubmit
-              </button>
+              <>
+                <button
+                  disabled={busy}
+                  onClick={() => {
+                    setEditTitle(po.title);
+                    setEditDescription(po.description ?? "");
+                    setEditAmount(String(po.amount));
+                    setEditCategory(po.category);
+                    setShowEditForm(true);
+                    setActionError(null);
+                  }}
+                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                >
+                  Edit
+                </button>
+                <button
+                  disabled={busy}
+                  onClick={() => handleAction(() => resubmitPO(po.id, currentUser.id))}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                >
+                  Resubmit
+                </button>
+              </>
             )}
 
             {canApprove && (
@@ -156,7 +179,76 @@ export default function PODetailPage() {
             )}
           </div>
 
-          {showRejectForm && (
+          {showEditForm && canResubmit && (
+            <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+              <p className="text-sm font-medium text-zinc-700">Edit Purchase Order</p>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-zinc-500">Title</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-zinc-500">Description <span className="font-normal text-zinc-400">(optional)</span></label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <label className="text-xs font-medium text-zinc-500">Amount ($)</label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={editAmount}
+                    onChange={(e) => setEditAmount(e.target.value)}
+                    className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <label className="text-xs font-medium text-zinc-500">Category</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value as POCategory)}
+                    className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                  >
+                    {categories.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  disabled={busy || !editTitle.trim() || !editAmount}
+                  onClick={() => handleAction(() => updatePO(po.id, currentUser.id, {
+                    title: editTitle,
+                    description: editDescription || undefined,
+                    amount: parseFloat(editAmount),
+                    category: editCategory,
+                  })).then(() => setShowEditForm(false))}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                >
+                  Save changes
+                </button>
+                <button
+                  onClick={() => setShowEditForm(false)}
+                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showRejectForm && canApprove && (
             <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
               <label className="text-sm font-medium text-zinc-700">Reason for rejection</label>
               <textarea
