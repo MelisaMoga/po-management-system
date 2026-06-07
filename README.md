@@ -6,7 +6,7 @@ A full-stack web application for automating the Purchase Order lifecycle - from 
 
 - **Database:** PostgreSQL 15 (via Docker)
 - **Backend:** Python + FastAPI
-- **Frontend:** Next.js (in progress)
+- **Frontend:** Next.js 16 + React 19 + TypeScript + Tailwind CSS
 - **ORM:** SQLAlchemy
 
 ## PO Lifecycle
@@ -47,6 +47,7 @@ A full-stack web application for automating the Purchase Order lifecycle - from 
 ### Prerequisites
 - Docker Desktop
 - Python 3.11+
+- Node.js 18+
 
 ### 1. Start PostgreSQL
 
@@ -54,24 +55,26 @@ A full-stack web application for automating the Purchase Order lifecycle - from 
 docker compose up -d
 ```
 
-### 2. Set up Python backend
+### 2. Set up and start the backend
 
 ```bash
 cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-### 3. Start the API server
-
-```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-## API Documentation
+### 3. Start the frontend
 
-Interactive Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app runs at [http://localhost:3000](http://localhost:3000).  
+API docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ## API Endpoints
 
@@ -104,22 +107,40 @@ Interactive Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## Project Structure
 
+```
 rinf/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── database.py
-│   │   ├── models.py
-│   │   ├── schemas.py
-│   │   ├── crud.py
+│   │   ├── main.py           # FastAPI app init + router registration
+│   │   ├── database.py       # SQLAlchemy engine + session factory
+│   │   ├── models.py         # ORM models + enums (UserRole, POStatus, POCategory)
+│   │   ├── schemas.py        # Pydantic request/response shapes
+│   │   ├── crud.py           # All DB reads/writes + state machine
 │   │   └── routes/
-│   │       ├── users.py
-│   │       └── po.py
+│   │       ├── users.py      # GET /api/users/
+│   │       └── po.py         # All PO endpoints (CRUD + workflow actions)
 │   ├── requirements.txt
 │   └── .env
 ├── frontend/
+│   └── src/
+│       ├── app/
+│       │   ├── layout.tsx        # Root layout — UserProvider + Header
+│       │   ├── page.tsx          # Dashboard — PO list table
+│       │   └── po/
+│       │       ├── new/
+│       │       │   └── page.tsx  # Create PO form
+│       │       └── [id]/
+│       │           └── page.tsx  # PO detail + actions + audit log
+│       ├── components/
+│       │   └── Header.tsx        # Role switcher
+│       ├── context/
+│       │   └── UserContext.tsx   # Simulated auth context
+│       └── lib/
+│           ├── api.ts            # All API calls
+│           └── types.ts          # TypeScript types
 ├── docker-compose.yml
 └── README.md
+```
 
 ## What I Would Improve With More Time
 
