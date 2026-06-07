@@ -1,6 +1,6 @@
 # PO Management System
 
-A full-stack web application for automating the Purchase Order lifecycle — from creation through multi-stage approval to invoicing.
+A full-stack web application for automating the Purchase Order lifecycle - from creation through multi-stage approval to invoicing.
 
 ## Tech Stack
 

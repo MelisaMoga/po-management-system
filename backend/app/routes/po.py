@@ -52,7 +52,7 @@ def submit_po(po_id: int, user_id: int, db: Session = Depends(get_db)):
     if po.created_by != user_id:
         raise HTTPException(status_code=403, detail="Only the creator can submit this PO")
 
-    # State machine — decide the first status
+    # State machine - decide the first status
     new_status = crud.calculate_next_status(po)
 
     crud.update_po_status(db, po, new_status)
@@ -132,7 +132,7 @@ def resubmit_po(po_id: int, user_id: int, db: Session = Depends(get_db)):
     if po.created_by != user_id:
         raise HTTPException(status_code=403, detail="Only the creator can resubmit this PO")
 
-    # Resubmit repornește fluxul de la început — aceeași logică ca submit
+    # Resubmit repornește fluxul de la început - aceeași logică ca submit
     new_status = crud.calculate_next_status(po)
 
     crud.update_po_status(db, po, new_status)

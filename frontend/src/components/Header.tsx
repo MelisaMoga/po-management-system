@@ -32,7 +32,7 @@ export default function Header() {
           >
             {users.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.username} — {roleLabels[u.role] ?? u.role}
+                {u.username} - {roleLabels[u.role] ?? u.role}
               </option>
             ))}
           </select>
