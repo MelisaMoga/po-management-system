@@ -62,6 +62,7 @@ cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+python seed.py
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -119,6 +120,7 @@ rinf/
 │   │   └── routes/
 │   │       ├── users.py      # GET /api/users/
 │   │       └── po.py         # All PO endpoints (CRUD + workflow actions)
+│   ├── seed.py               # Seeds one user per role (idempotent)
 │   ├── requirements.txt
 │   └── .env
 ├── frontend/
