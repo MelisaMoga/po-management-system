@@ -108,13 +108,16 @@ def reject_po(po_id: int, user_id: int, reason: str, db: Session = Depends(get_d
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    approval_statuses = [
-        models.POStatus.PENDING_MANAGER_APPROVAL,
-        models.POStatus.PENDING_IT_VALIDATION,
-        models.POStatus.PENDING_FINANCE_APPROVAL
-    ]
-
-    if po.status not in approval_statuses:
+    if po.status == models.POStatus.PENDING_MANAGER_APPROVAL:
+        if user.role != models.UserRole.MANAGER:
+            raise HTTPException(status_code=403, detail="Only a manager can reject at this stage")
+    elif po.status == models.POStatus.PENDING_IT_VALIDATION:
+        if user.role != models.UserRole.IT_REP:
+            raise HTTPException(status_code=403, detail="Only an IT rep can reject at this stage")
+    elif po.status == models.POStatus.PENDING_FINANCE_APPROVAL:
+        if user.role != models.UserRole.FINANCE:
+            raise HTTPException(status_code=403, detail="Only a finance user can reject at this stage")
+    else:
         raise HTTPException(status_code=400, detail=f"PO cannot be rejected at status: {po.status}")
 
     crud.update_po_status(db, po, models.POStatus.NEEDS_REWORK, rejection_reason=reason)
