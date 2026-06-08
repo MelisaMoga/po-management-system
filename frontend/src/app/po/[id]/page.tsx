@@ -40,7 +40,7 @@ export default function PODetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  async function handleAction(action: () => Promise<PO>) {
+  async function handleAction(action: () => Promise<PO>): Promise<boolean> {
     setBusy(true);
     setActionError(null);
     try {
@@ -48,8 +48,10 @@ export default function PODetailPage() {
       setPo(updated);
       setShowRejectForm(false);
       setRejectReason("");
+      return true;
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Something went wrong.");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -233,7 +235,7 @@ export default function PODetailPage() {
                     description: editDescription || undefined,
                     amount: parseFloat(editAmount),
                     category: editCategory,
-                  })).then(() => setShowEditForm(false))}
+                  })).then((ok) => { if (ok) setShowEditForm(false); })}
                   className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors disabled:opacity-50"
                 >
                   Save changes
